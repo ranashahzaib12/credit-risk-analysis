@@ -65,7 +65,7 @@ def apply_feature_engineering(df):
 # --- Load Models ---
 @st.cache_data(show_spinner=False)
 def load_model():
-    with open('gbm_model.pkl', 'rb') as f:
+    with open('best_model.pkl', 'rb') as f:
         model = pickle.load(f)
     with open('preprocessor.pkl', 'rb') as f:
         preprocessor = pickle.load(f)
