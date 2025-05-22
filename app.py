@@ -57,10 +57,37 @@ def user_input_features():
 
 # --- Feature Engineering Function ---
 def apply_feature_engineering(df):
+    # Prevent division by zero
+    dependents = df['NumberOfDependents'].replace(0, 1)
+    loans = df['NumberOfOpenCreditLinesAndLoans'].replace(0, 1)
+
+    # Feature 1: Income per person
     df['IncomePerPerson'] = df['MonthlyIncome'] / (df['NumberOfDependents'] + 1)
-    df['DebtPerIncome'] = df['DebtRatio'] * df['MonthlyIncome']
-    df['TotalLatePayments'] = df['NumberOfTime30-59DaysPastDueNotWorse'] + df['NumberOfTimes90DaysLate'] + df['NumberOfTime60-89DaysPastDueNotWorse']
+
+    # Feature 2: Estimated total debt
+    df['EstimatedDebt'] = df['DebtRatio'] * df['MonthlyIncome']
+
+    # Feature 3: Income to DebtRatio
+    df['Income_to_DebtRatio'] = df['MonthlyIncome'] / (df['DebtRatio'] + 0.01)
+
+    # Feature 4: Income per credit line
+    df['Income_per_CreditLine'] = df['MonthlyIncome'] / (loans + 1)
+
+    # Feature 5: Total late payments
+    df['Total_PastDue'] = (
+        df['NumberOfTime30-59DaysPastDueNotWorse'] +
+        df['NumberOfTime60-89DaysPastDueNotWorse'] +
+        df['NumberOfTimes90DaysLate']
+    )
+
+    # Feature 6: Late payments to open loans
+    df['LatePayment_to_Loans'] = df['Total_PastDue'] / (loans + 1)
+
+    # Feature 7: Has late payment flag
+    df['Has_LatePayment'] = df['Total_PastDue'].apply(lambda x: 1 if x > 0 else 0)
+
     return df
+
 
 # --- Load Models ---
 @st.cache_data(show_spinner=False)
